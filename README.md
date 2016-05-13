@@ -1,4 +1,4 @@
-# DailyTimer
+# DailyTimer for Arduino
 A library that will allow you to control daily events.
 
 Provides tools to set daily timers for control of devices such as lamps, appliances, etc. Developed primarilary for houshold presence simulation.
