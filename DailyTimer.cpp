@@ -167,8 +167,8 @@ bool DailyTimer::isActive()
     }
     _currentDay = weekday();
   }
-  time_t on_time = tmConvert_t(year(), month(), day(), /*(_randomType == RANDOM || _randomType == RANDOM_START) ? _randomStartTime.hour : */_startTime.hour, /*(_randomType == RANDOM || _randomType == RANDOM_START) ? _randomStartTime.minute :*/ _startTime.minute, 0);
-  time_t off_time = tmConvert_t(year(), month(), day(), /*(_randomType == RANDOM || _randomType == RANDOM_END) ? _randomEndTime.hour : */_endTime.hour, /*(_randomType == RANDOM || _randomType == RANDOM_END) ? _randomEndTime.minute : */_endTime.minute, 0);
+  time_t on_time = tmConvert_t(year(), month(), day(), (_randomType == RANDOM || _randomType == RANDOM_START) ? _randomStartTime.hour : _startTime.hour, (_randomType == RANDOM || _randomType == RANDOM_START) ? _randomStartTime.minute : _startTime.minute, 0);
+  time_t off_time = tmConvert_t(year(), month(), day(), (_randomType == RANDOM || _randomType == RANDOM_END) ? _randomEndTime.hour : _endTime.hour, (_randomType == RANDOM || _randomType == RANDOM_END) ? _randomEndTime.minute : _endTime.minute, 0);
   time_t now_time = tmConvert_t(year(), month(), day(), hour(), minute(), second());
   byte weekDay = weekday();
   byte today = B00000001 << (8 - weekDay);
