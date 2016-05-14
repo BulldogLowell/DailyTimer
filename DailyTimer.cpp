@@ -13,18 +13,30 @@ DailyTimer::DailyTimer(byte StartHour, byte StartMinute, byte endHour, byte endM
   setDaysActive(_onMask);
   _randomType = FIXED;
   _offset = 15;
-}
-
-DailyTimer::DailyTimer(byte startHour, byte startMinute, byte endHour, byte endMinute, EventDays DayOfWeek, RandomTime randomTime)
-{
-  DailyTimer(startHour, startMinute, endHour, endMinute, DayOfWeek);
-  _randomType = randomTime;
   _randomCallback = NULL;
 }
 
-DailyTimer::DailyTimer(byte startHour, byte startMinute, byte endHour, byte endMinute, EventDays DayOfWeek, RandomTime randomTime, uint32_t (*randomCallback)())
+DailyTimer::DailyTimer(byte StartHour, byte StartMinute, byte endHour, byte endMinute, EventDays DayOfWeek, RandomTime randomTime)
 {
-  DailyTimer(startHour, startMinute, endHour, endMinute, DayOfWeek, randomTime);
+  _startTime.hour = constrain(StartHour, 0, 23);
+  _startTime.minute = constrain(StartMinute, 0, 59);
+  _endTime.hour = constrain(endHour, 0, 23);
+  _endTime.minute = constrain(endMinute, 0, 59);
+  _onMask = dayTemplate[DayOfWeek];
+  _randomType = randomTime;
+  _offset = 15;
+  _randomCallback = NULL;
+}
+
+DailyTimer::DailyTimer(byte StartHour, byte StartMinute, byte endHour, byte endMinute, EventDays DayOfWeek, RandomTime randomTime, uint32_t (*randomCallback)())
+{
+  _startTime.hour = constrain(StartHour, 0, 23);
+  _startTime.minute = constrain(StartMinute, 0, 59);
+  _endTime.hour = constrain(endHour, 0, 23);
+  _endTime.minute = constrain(endMinute, 0, 59);
+  _onMask = dayTemplate[DayOfWeek];
+  _randomType = randomTime;
+  _offset = 15;
   _randomCallback = randomCallback;
 }
 void DailyTimer::setDaysActive(EventDays days)
@@ -138,12 +150,12 @@ bool DailyTimer::isActive()
     }
     _currentDay = weekday();
   }
-  int on_time = tmConvert_t(year(), month(), day(), (_randomType == RANDOM || _randomType == RANDOM_START) ? _randomStartTime.hour : _startTime.hour, (_randomType == RANDOM || _randomType == RANDOM_START) ? _randomStartTime.minute : _startTime.minute, 0);
-  int off_time = tmConvert_t(year(), month(), day(), (_randomType == RANDOM || _randomType == RANDOM_END) ? _randomEndTime.hour : _endTime.hour, (_randomType == RANDOM || _randomType == RANDOM_END) ? _randomEndTime.minute : _endTime.minute, 0);
-  int now_time = tmConvert_t(year(), month(), day(), hour(), minute(), second());
+  time_t on_time = tmConvert_t(year(), month(), day(), /*(_randomType == RANDOM || _randomType == RANDOM_START) ? _randomStartTime.hour : */_startTime.hour, /*(_randomType == RANDOM || _randomType == RANDOM_START) ? _randomStartTime.minute :*/ _startTime.minute, 0);
+  time_t off_time = tmConvert_t(year(), month(), day(), /*(_randomType == RANDOM || _randomType == RANDOM_END) ? _randomEndTime.hour : */_endTime.hour, /*(_randomType == RANDOM || _randomType == RANDOM_END) ? _randomEndTime.minute : */_endTime.minute, 0);
+  time_t now_time = tmConvert_t(year(), month(), day(), hour(), minute(), second());
   byte weekDay = weekday();
   byte today = B00000001 << (8 - weekDay);
-  if (today &= dayTemplate[SUNDAY])
+  if (today & dayTemplate[SUNDAY])
   {
     today |= B00000001;
   }
@@ -155,6 +167,7 @@ bool DailyTimer::isActive()
     }
     else if (off_time < on_time)
     {
+      
       return (now_time > on_time || now_time < off_time);
     }
     else // if both on and off are set to the same time, I'm confused... so let's do nothing
