@@ -39,28 +39,33 @@ April, 2016
 
 DailyTimer timer1( 14, 43, 14, 55, EVERY_DAY, RANDOM, customSeedGenerator);   // optional callback function for random number generation, see below example
 DailyTimer timer2( 14, 38, 23, 59, SATURDAY, FIXED);                          // default is FIXED, this will randomize the start time only
-DailyTimer timer3( 14, 39,  0,  1, WEEKENDS);                                 // creates with a fixed start time and end time
+DailyTimer timer3( 14, 39, 14, 38, EVERY_DAY);                                 // creates with a fixed start time and end time
 bool timer1_LastState = false;
 
 void setup() 
 {
-  setTime(1461422261);                        // set your sync provider!!
+  setTime(1461422269);                        // set your sync provider!!
+  timer3.begin();                             // use this for syncing the state tools startTrigger() and endTrigger() on startup
+  timer2.begin();                              
+  timer1.begin();                         
   Serial.begin(9600);
   pinMode(13, OUTPUT);
   //timer1.setDaysActive(WEEKENDS);           // Set the timer to be active on weekends
   //timer1.setDaysActive(B10101010);          // or define a custom day mask... SMTWTFS0
   //timer1.setRandomDays(4);                  // or four random days per week
-  timer2.setRandomOffset(5, RANDOM);          // Change to random start time, +/- 5 minutes... max 59 mins
+  timer1.setRandomOffset(5, RANDOM);          // Change to random start time, +/- 5 minutes... max 59 mins
   Serial.println(timer1.getDays(), BIN);      // getDays() returns active days as a byte in the format above
   Serial.print(F("Today is "));
   Serial.println(dayStr(weekday()));
+  timer1.begin();
+  timer2.begin();
+  timer3.begin();
 }
 
 uint32_t lastUpdateTime = 0;
 
 void loop() 
 {
-  
   bool timerState = timer1.isActive();
   if(timerState != timer1_LastState)
   {
@@ -80,10 +85,13 @@ void loop()
   {
     Serial.println(F("Timer 2 FIRED!"));
   }
-  
   if(timer3.startTrigger())
   {
     Serial.println(F("Timer 3 FIRED!"));
+  }
+  if(timer3.endTrigger())
+  {
+    Serial.println(F("Timer 3 Expired!"));
   }
   if(millis() - lastUpdateTime > 1000UL)
   {
@@ -92,9 +100,9 @@ void loop()
     Serial.println(timeBuffer);
     lastUpdateTime += 1000UL;
   }
-  Serial.print(F("Timer1 is: "));
-  Serial.println(timerState? "Active" : "Inactive");
-  delay(1000);
+//  Serial.print(F("Timer1 is: "));
+//  Serial.println(timerState? "Active" : "Inactive");
+//  delay(1000);
 }
 
 uint32_t customSeedGenerator()
