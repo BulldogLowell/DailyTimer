@@ -39,6 +39,12 @@ DailyTimer::DailyTimer(byte StartHour, byte StartMinute, byte endHour, byte endM
   _offset = 15;
   _randomCallback = randomCallback;
 }
+
+bool DailyTimer::begin()
+{
+  _state = this->isActive();
+}
+
 void DailyTimer::setDaysActive(EventDays days)
 {
   _onMask = dayTemplate[days];
@@ -54,6 +60,17 @@ bool DailyTimer::startTrigger()
 {
   bool currentState = this->isActive();
   if (currentState != _state && currentState == true)
+  {
+    _state = currentState;
+    return true;
+  }
+  return false;
+}
+
+bool DailyTimer::endTrigger()
+{
+  bool currentState = this->isActive();
+  if (currentState != _state && currentState == false)
   {
     _state = currentState;
     return true;
