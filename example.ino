@@ -102,6 +102,6 @@ uint32_t customSeedGenerator()
   Serial.println(F("New Seed Created"));
   uint32_t seed = analogRead(A5);
   delay(100);
-  seed << 8;
+  seed << 16;
   return  seed |= analogRead(A5);
 }
