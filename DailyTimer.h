@@ -38,6 +38,8 @@ class DailyTimer{
     byte setRandomDays(byte number_Days);
     bool isActive();
     bool startTrigger();
+    bool endTrigger();
+    bool begin();
     void setStartTime(byte hour, byte minute);
     void setEndTime(byte hour, byte minute);
     byte getDays();
