@@ -2,116 +2,88 @@
 DailyTimer.h Library
 BulldogLowell@gmail.com
 April, 2016
-** Library provides tools to set daily timers for control of devices such as lamps, appliances, etc. Developed primarilary for houshold presence simulation.
-** Allows for setting ON and OFF times, days of the week (i.e. weekends, weekdays, Fridays) and the use of random on/off times using this Constructor:
-   DailyTimer myTimer( START_HOUR, START_MINUTE, END_HOUR, END_MINUTE, DAYS_OF_WEEK, RANDOM or FIXED)
+/*
+ * DailyTimer Library
+   Copyright(c) 2017, James Brower,  BulldogLowell@gmail.com
    
-** Timers may bridge midnight, simply enter times accordingly:
-   DailyTimer myTimer( 18, 30,  1, 45, WEEKENDS, FIXED);  // starts at 6:30pm Saturdays and Sundays and ends at 1:45am the next day.
-   
-** Automatically sets correct timer state on powerup, using isActive() in loop(), see example below.
-** Random start and/or end times using this member function:
-   myTimer.setRandomOffset(30, RANDOM_START);  //  Can be RANDOM_START, RANDOM_END, or both (RANDOM)  default random offfset is 15min
-   
-** Random days of week using this member function:
-   myTimer.setRandomDays(4); // will select four days of the week, randomly.  Useful to run this member function once a week, for example.
-   
-** Select custom days of the week using this member function:
-   myTimer.setDaysActive(0b10101010);  // e.g.Sunday, Tuesday, Thursday and Saturday Note: Days in this order:  0bSMTWTFS0 <- LSB is zero 
-   
-** Set a timed event with just the start time as a trigger:
-   myTimer.startTrigger();  // will return true when Start Time is passed if today is an active day. use it in loop() 
-   
-** you can return the active days using this getter:
-   byte myByte = myTimer.getDays();  // returns a byte... Sunday is the MSB, Saturday is the LSB << 1
-   
-** Dynamically set your start or end time (i.e. using some type of celestial function or web call to determine Sunrise or Sunset times)
-   myTimer.setStartTime(byte hour, byte minute);
-   myTimer.setEndTime(byte hour, byte minute);
-   
-*/
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-//Program Start
+   Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
+   to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
+   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+   IN THE SOFTWARE.
+*/
 
 #include "DailyTimer.h"
-#include <Time.h>
 
-DailyTimer timer1( 14, 43, 14, 55, EVERY_DAY, RANDOM, customSeedGenerator);   // optional callback function for random number generation, see below example
-DailyTimer timer2( 14, 38, 23, 59, SATURDAY, FIXED);                          // default is FIXED, this will randomize the start time only
-DailyTimer timer3( 14, 39, 14, 38, EVERY_DAY);                                 // creates with a fixed start time and end time
-bool timer1_LastState = false;
+void ledOn(void);  // function definitions/prototypes required here
+void ledOff(void);
+
+const byte ledPin = 13;
+
+DailyTimer ledTimer1(
+  true,                             // AutoSync true or false, will run the startTimeCallback() if restarts within the active range or after range changes and you are in the range
+  23,                               // Start Hour
+  59,                               // Start Minute
+  0,                                // End Hour 
+  2,                                // End Minute
+  TUESDAYS,                         // SUNDAYS, MONDAYS, TUESDAYS, WEDNESDAYS, THURSDAYS, FRIDAYS, SATURDAYS, WEEKENDS, WEEKDAYS, or EVERY_DAY
+  FIXED,                            // OPTIONAL - FIXED, RANDOM, RANDOM_START, or RANDOM_END
+  ledOn,                            // pointer to function to execute at Start time, or a Lambda as in this example:
+  //[]{Serial.println("done with a Lambda"); digitalWrite(ledPin, HIGH);},  // Lambda equivalent example rather than creating a new function -> no prototypes needed :)
+  ledOff                            // pointer to function to execute at End time
+);
 
 void setup() 
 {
-  setTime(1461422269);                        // set your sync provider!!
-  timer3.begin();                             // use this for syncing the state tools startTrigger() and endTrigger() on startup
-  timer2.begin();                              
-  timer1.begin();                         
   Serial.begin(9600);
   pinMode(13, OUTPUT);
-  //timer1.setDaysActive(WEEKENDS);           // Set the timer to be active on weekends
-  //timer1.setDaysActive(B10101010);          // or define a custom day mask... SMTWTFS0
-  //timer1.setRandomDays(4);                  // or four random days per week
-  timer1.setRandomOffset(5, RANDOM);          // Change to random start time, +/- 5 minutes... max 59 mins
-  Serial.println(timer1.getDays(), BIN);      // getDays() returns active days as a byte in the format above
-  Serial.print(F("Today is "));
-  Serial.println(dayStr(weekday()));
-  timer1.begin();
-  timer2.begin();
-  timer3.begin();
-}
+  setTime(1494979136);
+  // example usage:
+  
+//  ledTimer1.setRandomOffset(10, RANDOM); // changes both the start time and end time to Random, +- 10 minutes
+//  ledTimer1.setRandomOffset(10, RANDOM_START); // changes both the start time to RANDOM_START, +- 10 minutes
+//  ledTimer1.setRandomOffset(10, RANDOM_END); // changes both the end time to RANDOM_END, +- 10 minutes
+//  ledTimer1.setRandomOffset(10, FIXED); // changes both the start time and end time to FIXED
+  
+//  ledTimer1.setDaysActive(WEEKENDS);  // changes to SUNDAYS, MONDAYS, TUESDAYS, WEDNESDAYS, THURSDAYS, FRIDAYS, SATURDAYS, WEEKENDS, WEEKDAYS, or EVERY_DAY
+//  ledTimer1.setDaysActive(0b11100000); // SUNDAYS, MONDAYS and TUESDAYS in this example
 
-uint32_t lastUpdateTime = 0;
+//  ledTimer1.setRandomDays(3);  // chooses three random days of the week
+
+//  ledTimer1.setStartTime(11, 30); // set the start time
+//  ledTimer1.setEndTime(23, 59);   // and the end time
+
+  ledTimer1.begin();  // syncs the timer, use it here and after calls to setStartTime
+  Serial.print("Active days: ");
+  Serial.println(ledTimer1.getDays(), BIN);
+}
 
 void loop() 
 {
-  bool timerState = timer1.isActive();
-  if(timerState != timer1_LastState)
-  {
-    if(timerState)
-    {
-      digitalWrite(13, HIGH);
-      Serial.println(F("Timer 1 is ON"));
-    }
-    else
-    {
-      digitalWrite(13, LOW);
-      Serial.println(F("Timer 1 is OFF"));
-    }
-    timer1_LastState = timerState;
-  }
-  if(timer2.startTrigger()) 
-  {
-    Serial.println(F("Timer 2 FIRED!"));
-  }
-  if(timer3.startTrigger())
-  {
-    Serial.println(F("Timer 3 FIRED!"));
-  }
-  if(timer3.endTrigger())
-  {
-    Serial.println(F("Timer 3 Expired!"));
-  }
-  if(millis() - lastUpdateTime > 1000UL)
+  static unsigned long lastTime = 0;
+  DailyTimer::update();
+  if(millis() - lastTime >= 1000)
   {
     char timeBuffer[32] = "";
-    sprintf(timeBuffer, "%02d/%02d/%d %02d:%02d:%02d" , month(), day(), year(), hour(), minute(), second());
+    sprintf(timeBuffer, "Time:%2d:%02d:%02d\tDate:%02d/%02d/%4d", hour(), minute(), second(), month(), day(), year());
     Serial.println(timeBuffer);
-    lastUpdateTime += 1000UL;
+    lastTime = millis();
   }
-//  Serial.print(F("Timer1 is: "));
-//  Serial.println(timerState? "Active" : "Inactive");
-//  delay(1000);
 }
 
-uint32_t customSeedGenerator()
+void ledOn(void)
 {
-  Serial.println(F("New Seed Created"));
-  uint32_t seed = int(analogRead(A5));
-  delay(100);
-  seed <<= 16;
-  seed |= int(analogRead(A5));
-  Serial.println(seed);
-  return  seed;
+  Serial.println("LED ON FUNCTION");
+  digitalWrite(13, HIGH);
+}
+
+void ledOff(void)
+{
+  Serial.println("LED OFF FUNCTION");
+  digitalWrite(13, LOW);
 }
