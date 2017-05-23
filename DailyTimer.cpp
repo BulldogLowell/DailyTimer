@@ -43,13 +43,13 @@ DailyTimer* instances[MAX_TIMER_INSTANCES] = {nullptr};
 //  DailyTimer(syncOnPowerup, StartHour, StartMinute, 0, 0, DaysOfTheWeek, randomTime, StartTimeCallback, NULL);
 //}
 
-DailyTimer::DailyTimer(bool syncOnPowerup, byte StartHour, byte StartMinute, byte EndHour, byte EndMinute, EventDays DaysOfTheWeek, void(*StartTimeCallback)(), void(*EndTimeCallback)())
+DailyTimer::DailyTimer(bool syncOnPowerup, uint8_t StartHour, uint8_t StartMinute, uint8_t EndHour, uint8_t EndMinute, EventDays DaysOfTheWeek, void(*StartTimeCallback)(), void(*EndTimeCallback)())
 {
   autoSync = syncOnPowerup;
-  startTime.hour = constrain(StartHour, 0, 23);
-  startTime.minute = constrain(StartMinute, 0, 59);
-  endTime.hour = constrain(EndHour, 0, 23);
-  endTime.minute = constrain(EndMinute, 0, 59);
+  startTime.hour = StartHour % 24;
+  startTime.minute = StartMinute % 60;
+  endTime.hour = EndHour % 24;
+  endTime.minute = EndMinute % 60;
   setDaysActive(dayTemplate[DaysOfTheWeek]);
   randomType = FIXED;
   offset = 0;
@@ -59,13 +59,13 @@ DailyTimer::DailyTimer(bool syncOnPowerup, byte StartHour, byte StartMinute, byt
   //DailyTimer(syncOnPowerup, StartHour, StartMinute, EndHour, EndMinute, DaysOfTheWeek, FIXED, StartTimeCallback, EndTimeCallback);
 }
 
-DailyTimer::DailyTimer(bool syncOnPowerup, byte StartHour, byte StartMinute, byte EndHour, byte EndMinute, EventDays DaysOfTheWeek, RandomTime randomTime, void(*StartTimeCallback)(), void(*EndTimeCallback)())
+DailyTimer::DailyTimer(bool syncOnPowerup, uint8_t StartHour, uint8_t StartMinute, uint8_t EndHour, uint8_t EndMinute, EventDays DaysOfTheWeek, RandomTime randomTime, void(*StartTimeCallback)(), void(*EndTimeCallback)())
 {
   autoSync = syncOnPowerup;
-  startTime.hour = constrain(StartHour, 0, 23);
-  startTime.minute = constrain(StartMinute, 0, 59);
-  endTime.hour = constrain(EndHour, 0, 23);
-  endTime.minute = constrain(EndMinute, 0, 59);
+  startTime.hour = StartHour % 24;
+  startTime.minute = StartMinute % 60;
+  endTime.hour = EndHour % 24;
+  endTime.minute = EndMinute % 60;
   setDaysActive(dayTemplate[DaysOfTheWeek]);
   randomType = randomTime;
   offset = 15;
@@ -124,16 +124,16 @@ void DailyTimer::setRandomOffset(int random_minutes, RandomTime randomSetting)
 
 void DailyTimer::setStartTime(byte hour, byte minute)
 {
-  startTime.hour = constrain(hour, 0, 23);
-  startTime.minute = constrain(minute, 0, 59);
+  startTime.hour = hour % 24;
+  startTime.minute = minute % 60;
   setDaysActive(onMask);
   (void)sync();
 }
 
 void DailyTimer::setEndTime(byte hour, byte minute)
 {
-  endTime.hour = constrain(hour, 0, 23);
-  endTime.minute = constrain(minute, 0, 59);
+  endTime.hour = hour % 24;
+  endTime.minute = minute % 60;
   setDaysActive(onMask);
   (void)sync();
 }
