@@ -13,7 +13,6 @@
    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
    IN THE SOFTWARE.
 */
-
 #ifndef DailyTimer_h
 #define DailyTimer_h
 
@@ -24,10 +23,10 @@
 #define MAX_TIMER_INSTANCES 10
 
 enum EventDays{SUNDAYS = 0, MONDAYS, TUESDAYS, WEDNESDAYS, THURSDAYS, FRIDAYS, SATURDAYS, WEEKENDS, WEEKDAYS, EVERY_DAY};
-enum RandomTime{FIXED, RANDOM, RANDOM_START, RANDOM_END};
+enum RandomType{FIXED, RANDOM, RANDOM_START, RANDOM_END};
 
-const byte dayTemplate[10] = {
-  /*SMTWTFSS*/                    // the mask is set with an extra bit for determining off times for days of the week where off time is earlier than on time (i.e. stradles Midnight)
+const byte dayTemplate[] = {
+  /*SMTWTFSS*/   // the bitmask is set with an extra bit for determining off times for days of the week where off time is earlier than on time (i.e. the two values stradle midnight)
   0b10000000,
   0b01000000,
   0b00100000,
@@ -42,22 +41,22 @@ const byte dayTemplate[10] = {
   
 class DailyTimer{
   public:
-    //DailyTimer(bool syncOnPowerup, byte StartHour, byte StartMinute, EventDays DaysOfTheWeek, void(*_startCallback)());
-    //DailyTimer(bool syncOnPowerup, byte StartHour, byte StartMinute, EventDays DaysOfTheWeek, RandomTime randomTime, void(*_startCallback)());
-    DailyTimer(bool syncOnPowerup, byte StartHour, byte StartMinute, byte EndHour, byte EndMinute, EventDays DaysOfTheWeek, void(*_startCallback)(), void(*_endCallback)());
-    DailyTimer(bool syncOnPowerup, byte StartHour, byte StartMinute, byte EndHour, byte EndMinute, EventDays DaysOfTheWeek, RandomTime randomTime, void(*_startCallback)(), void(*_endCallback)());
+  
+    DailyTimer(byte StartHour, byte StartMinute, EventDays DaysOfTheWeek, RandomType type, void(*_startCallback)());
+    DailyTimer(bool syncOnPowerup, byte StartHour, byte StartMinute, byte EndHour, byte EndMinute, EventDays DaysOfTheWeek, RandomType type, void(*_startCallback)(), void(*_endCallback)());
 
     void setDaysActive(EventDays days);
     void setDaysActive(byte activeDays);
     byte setRandomDays(byte number_Days);
-    void setRandomOffset(int random_minutes, RandomTime randomSetting);
-    void setStartTime(byte hour, byte minute);
-    void setEndTime(byte hour, byte minute);
-    bool begin();
-    byte getDays();
+    void setRandomOffset(uint8_t random_minutes, RandomType randomSetting);
+    void setStartTime(uint8_t hour, uint8_t minute);
+    void setEndTime(uint8_t hour, uint8_t minute);
+    int getInstanceCount(void) const;
+    bool begin(); 
+    uint8_t getDays() const;
     static void update();
     
-  private:
+  protected:
     struct TimerTime{ // bounded 00:00 to 23:59
       uint8_t hour;
       uint8_t minute;
@@ -65,22 +64,22 @@ class DailyTimer{
     bool sync();
     void(*startTimeCallback)(); //
     void(*endTimeCallback)();   //
-    byte onMask;                // compact ON days storage
-    byte offMask;               // compact OFF days storage
-    bool state;                 // retains On/Off state of timer
-    bool autoSync;              // 
+    uint8_t onMask;                // compact ON days storage
+    uint8_t offMask;               // compact OFF days storage
+    bool state;                 // retains last true/false state of timer
+    bool autoSync;              // will run startTimeCallback if timer is in active state when times are changed or powerup
     TimerTime startTime;        //
     TimerTime endTime;          // 
     TimerTime randomStartTime;  // calculated once daily
     TimerTime randomEndTime;    // calculated once daily
-    byte randomType;            // 
-    byte currentDay;            // for comparison of a daily event to randomize the Start and end times
+    RandomType randomType;            // 
+    uint8_t currentDay;          // for comparison of a daily event to randomize the Start and end times
     uint8_t offset;             // minutes of fuzziness for random Starts and Ends
 
     static bool isActive(DailyTimer* instance);
     static time_t tmConvert_t(int YYYY, byte MM, byte DD, byte hh, byte mm, byte ss);
     static DailyTimer* instanceAddress;
-    static int instanceCount;
+    static uint8_t instanceCount;
 };
 
 #endif
