@@ -193,6 +193,11 @@ void DailyTimer::update()
   }
 }
 
+bool DailyTimer::isActive()
+{
+  isActive(this);
+}
+
 bool DailyTimer::isActive(DailyTimer* instance)
 {
   if (instance->currentDay != weekday() && instance->randomType) // once a day, generate new random offsets
