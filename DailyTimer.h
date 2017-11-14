@@ -13,10 +13,11 @@
    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
    IN THE SOFTWARE.
 */
+
 #ifndef DailyTimer_h
 #define DailyTimer_h
 
-#include <Time.h>
+//#include <Time.h>
 #include <TimeLib.h>
 #include "Arduino.h"
 
@@ -55,6 +56,8 @@ class DailyTimer{
     bool begin(); 
     uint8_t getDays() const;
     static void update();
+    static time_t tmConvert_t(int YYYY, byte MM, byte DD, byte hh, byte mm, byte ss);
+    bool isActive();
     
   protected:
     struct TimerTime{ // bounded 00:00 to 23:59
@@ -75,9 +78,7 @@ class DailyTimer{
     RandomType randomType;            // 
     uint8_t currentDay;          // for comparison of a daily event to randomize the Start and end times
     uint8_t offset;             // minutes of fuzziness for random Starts and Ends
-
     static bool isActive(DailyTimer* instance);
-    static time_t tmConvert_t(int YYYY, byte MM, byte DD, byte hh, byte mm, byte ss);
     static DailyTimer* instanceAddress;
     static uint8_t instanceCount;
 };
